@@ -21,8 +21,9 @@ console.log('database connected')
 async function run(){
     try {
       const servicesCollection = client.db('creative_agency').collection('services')
+      const ordersCollection = client.db('creative_agency').collection('orders')
 
-
+    // Read using Get
     // Get all services from the Database
     app.get('/services', async(req, res)=>{
     const query = {};
@@ -30,12 +31,30 @@ async function run(){
     const result = await cursor.toArray();
     res.send(result)
 
-    // Get a Single service from the database
+    // Get a Single service from the database for serviceDetails page
     app.get('/services/:id', async(req, res)=>{
       const id = req.params.id;
       const query = { _id : new ObjectId(id) }
       const service = await servicesCollection.findOne(query);
       res.send(service);
+
+      // Get Single service for checkout page
+      app.get('/checkout/:id', async(req, res)=>{
+        const id = req.params.id;
+        const query = { _id : new ObjectId(id)}
+        const result = await servicesCollection.findOne(query);
+        res.send(result);
+      })
+
+      // ----------- Order API ---------- 
+      // Create using post 
+      app.post('/orders', async(req, res)=>{
+        const order = req.body;
+        const result = await ordersCollection.insertOne(order);
+        res.send(result);
+      })
+      
+
     })
 })} 
     finally {
