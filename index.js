@@ -23,22 +23,22 @@ async function run(){
       const servicesCollection = client.db('creative_agency').collection('services')
       const ordersCollection = client.db('creative_agency').collection('orders')
 
-    // Read using Get
-    // Get all services from the Database
+
+    // ----- READ ----- Get all services from the Database
     app.get('/services', async(req, res)=>{
     const query = {};
     const cursor  = servicesCollection.find(query);
     const result = await cursor.toArray();
     res.send(result)
 
-    // Get a Single service from the database for serviceDetails page
+    // ----- READ ----- Get a Single service for serviceDetails page
     app.get('/services/:id', async(req, res)=>{
       const id = req.params.id;
       const query = { _id : new ObjectId(id) }
       const service = await servicesCollection.findOne(query);
       res.send(service);
 
-      // Get Single service for checkout page
+      // ----- READ ----- Get Single service for checkout page
       app.get('/checkout/:id', async(req, res)=>{
         const id = req.params.id;
         const query = { _id : new ObjectId(id)}
@@ -46,14 +46,48 @@ async function run(){
         res.send(result);
       })
 
-      // ----------- Order API ---------- 
-      // Create using post 
+      // ----------- Order API ----------
+      // ----- READ ----- Get all orders for a user using Get & query
+      app.get('/orders', async(req, res)=>{
+        let query = {};
+        if(req.query.email){
+          query = {
+            email: req.query.email
+          }
+        }
+        const cursor = ordersCollection.find(query);
+        const orders = await cursor.toArray();
+        res.send(orders);
+      }) 
+
+      // --- CREATE ---  using post 
       app.post('/orders', async(req, res)=>{
         const order = req.body;
         const result = await ordersCollection.insertOne(order);
         res.send(result);
       })
-      
+
+      // --- UPDATE ---- 
+      app.patch('/orders/:id', async(req, res)=>{
+        const id = req.params.id;
+        const status = req.body.status;
+        const query = {_id: new ObjectId(id)}
+        const updatedDoc = {
+          $set:{
+            status: status
+          }
+        }
+        const result = await ordersCollection.updateOne(query, updatedDoc);
+        res.send(result);
+      })
+
+      // --- DELETE --- Order
+      app.delete('/orders/:id', async(req, res)=>{
+        const id = req.params.id;
+        const query = {_id : new ObjectId(id)};
+        const result = await ordersCollection.deleteOne(query);
+        res.send(result);
+      })
 
     })
 })} 
